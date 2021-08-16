@@ -1,3 +1,6 @@
 [submodule "Proyectos/Tesis"]
 	path = Proyectos/Tesis
 	url = https://github.com/ZibraMax/Tesis-NLFEM/
+[submodule "Proyectos/Tesis_pregrado_Arturo/Codigo"]
+	path = Proyectos/Tesis_pregrado_Arturo/Codigo
+	url = https://github.com/ZibraMax/Tesis-NLFEM/
