@@ -1,6 +1,7 @@
 # Specify filepatterns you want git to ignore.
 
 .ipynb_checkpoints
-*.pdf
+Compilado de referencias/
+Proyectos/Tesis_pregrado_Arturo/Informacion/
 *.docx
 *.doc
