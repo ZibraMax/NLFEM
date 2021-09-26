@@ -1,0 +1,152 @@
+\documentclass{article}
+\usepackage{lmodern}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{ragged2e}
+\usepackage{pdfpages}
+\usepackage{float}
+\usepackage{vmargin}
+\usepackage{wrapfig}
+\usepackage{titlesec}
+\usepackage{lastpage}
+\usepackage{csquotes}
+\usepackage{lipsum}
+\usepackage{comment}
+\usepackage{fontawesome}
+\usepackage{dirtree}
+\usepackage{svg}
+\newcommand{\filetree}[1]{{\faFileCodeO}\ {#1}}
+\newcommand{\foldertree}[1]{{\faFolderOpenO}\ {#1}}
+
+
+\usepackage{float}
+\usepackage{aliascnt}
+\newaliascnt{eqfloat}{equation}
+\newfloat{eqfloat}{h}{eqflts}
+\floatname{eqfloat}{Ecuación}
+
+\newcommand*{\ORGeqfloat}{}
+\let\ORGeqfloat\eqfloat
+\def\eqfloat{%
+  \let\ORIGINALcaption\caption
+  \def\caption{%
+    \addtocounter{equation}{-1}%
+    \ORIGINALcaption
+  }%
+  \ORGeqfloat
+}
+
+\usepackage[spanish]{babel}
+\usepackage[
+backend=biber,
+style=apa
+]{biblatex}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+
+\setcounter{smartand}{0}
+\DefineBibliographyStrings{spanish}{%
+    andothers = {\textit{et al.}},
+}
+\addbibresource{referencias/Referencias.bib}
+
+\AtBeginBibliography{\sffamily}
+\decimalpoint
+\newcommand\nombreProyecto{Resumen hasta el momento NLFEM}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\DeclareUnicodeCharacter{2212}{−}
+\usepgfplotslibrary{groupplots,dateplot}
+\usetikzlibrary{patterns,shapes.arrows}
+\pgfplotsset{compat=newest}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    pdfauthor=Arturo Rodriguez,    
+    urlcolor=blue,
+}
+\urlstyle{same}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\titleformat{\section}
+{\sffamily}{\bfseries}{0pt}{\LARGE}
+
+\titleformat{\subsection}
+{\sffamily}{\bfseries}{0pt}{\Large}
+
+\titleformat{\subsubsection}
+{\sffamily}{\bfseries}{0pt}{\large}
+
+\DeclareCaptionFont{captionFont}{\sffamily}
+
+\captionsetup{
+    width=0.9\linewidth,
+    labelfont=bf,
+    font=small,
+    labelsep=period,
+    font=captionFont,
+}
+
+\setpapersize{A4}
+\setmargins{3cm}        % Margen izquierda
+{1cm}                   % Margen superior
+{15cm}                  % Margen derecha
+{22.42cm}               % Margen inferior
+{10pt}
+{1cm}
+{0pt}
+{1cm}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+
+
+\newcommand\course{\sffamily \nombreProyecto}
+\newcommand\NetIDb{\sffamily \today}
+\newcommand\NetIDc{\sffamily}
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+\lhead{\course}
+\rhead{}
+\lfoot{}
+\cfoot{}
+\rfoot{\sffamily Página \textbf{\thepage\ }de \textbf{\pageref*{LastPage}}}
+\headheight 20pt
+\footskip 40pt
+\textheight 680pt
+
+\renewcommand{\footrulewidth}{0.4pt}
+
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\addto\captionsspanish{\renewcommand{\listtablename}{Índice de Tablas}}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+\begin{document}
+\sffamily
+\pagestyle{fancy}
+\hypersetup{pageanchor=false}
+{\hypersetup{hidelinks}
+% \tableofcontents
+% \listoffigures
+% \listoftables
+}
+\newpage
+\hypersetup{pageanchor=true}
+
+
+Aqui se empieza
+
+
+
+\newpage
+\printbibliography[heading=bibintoc]
+\end{document}
