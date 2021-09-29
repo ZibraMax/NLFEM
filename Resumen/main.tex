@@ -142,11 +142,74 @@ style=apa
 \newpage
 \hypersetup{pageanchor=true}
 
+\section*{Programas}
+Tenemos varios programas de FEM.
 
-Aqui se empieza
+\begin{enumerate}
+  \item \textbf{Implementación específica NLFEM. [Python]:}
+        Esta fue la implementación que usamos en mi tesis de pregrado. Permite el cálculo de matrices de manera LENTA. Sin embargo, se le hicieron muchas pruebas y se sabe que los resultados que se pueden obtener son confiables. No se pueden evaluar condiciones de borde naturales (cargas aplicadas en los bordes del dominio). Las geometrías de entrada se tienen que dar a nivel de vértices pero no se permiten secciones huecas o secciones con diferentes materiales.
+
+        El programa permite realizar el post proceso solamente para las deformaciones en x. No se realiza cálculo de esfuerzos.
+
+        El programa puede integrar el problema base en unas 20h, lo cual es inaceptable.
+
+    \item \textbf{Integrador en C++:}
+        El integrador es un programa de FEM que solamente se ocupa de realizar el cálculo de las matrices locales y no locales. En este caso, el integrador fue realizado en C++ para apoyar el proceso del programa anterior. Dicho programa en C++ es mucho más rápido y permite solucionar el problema base en 25 minutos aproximadamente. Este mismo módulo integrador fue implementado en Fortran, sin embargo, no se obtuvo un rendimiento significativamente mayor al del programa de C++. Esto se debe en principio a que el compilador de Fortran para Windows funciona sobre C y que la implementación en sí estaba enfocada más a un lenguaje orientado a objetos.
+
+        Este programa fue retroactivamente actualizado para introducir el polimorfismo que es la característica clave de los programas de Python. Esto permite que el mismo programa sea capaz de realizar el cálculo de matrices para cualquier elemento. Esta característica no parece relevante en principio, ya que, se podrían hacer diferentes funciones de código para hacer las integrales de los elementos y el problema estaría solucionado, sin embargo, al implementar polimorfismo se puede asegurar que si el programa calcula correctamente las matrices para elementos rectangulares, el cálculo de las matrices con elementos triangulares será correcto. Esto facilita la validación y permite usar otros tipos de elementos en los que los enmallados son más fáciles de construir. Adicionalmente, esto permite la combinación de diferentes tipos de elemento en la misma geometría.
+
+    \item \textbf{Implementación general N dimensiones FEM [Python/Numpy]}
+        El nuevo programa que tenemos permite la solución y post proceso de problemas \textbf{lineales y no lineales} para problemas de 1, 2 y 3 dimensiones con la capacidad de manipular cuantas variables por nodo sean necesarias. El programa cuenta con herramientas de enmallado para elementos triangulares de orden 1 y 2. Se pueden asignar cualquier tipo de condiciones de borde y se permite el post proceso de todas las variables y el cálculo de esfuerzos. Se implementó una herramienta de creación de perfiles mas robusta que la del programa anterior y se cuenta con una serie de modificadores geométricos que permiten incluir huecos, bordes curvos, y bordes de elementos que coincidan con un segmento específico. Esto permite implementar problemas donde los elementos tiene propiedades distintas entre si. El programa tiene varias "Clases" donde se implementaron una serie de problemas lineales y no lineales (la mayoría vienen de los libros de Reddy) por ejemplo, calor, esfuerzos y deformaciones planas, vigas Euler-Bernoulli, etc. El programa cuenta con pruebas unitarias que realizan validación numérica de los resultados. Para el caso de elasticidad no local, este programa calcula las integrales usando una implementación más cercana a Numpy que a Python. Esto permite que el problema base se pueda solucionar en 28 minutos aproximadamente. Incluyendo el postproceso de los resultados (tiempo que no se tenía en cuenta en los programas integradores). Dicha implementación es la que se usó en este documento para todas las figuras y resultados mostrados.
+
+        Este programa no cuenta con la implementación 3D de elasticidad, ya que, no tengo una manera fácil de realizar el enmallado y post proceso de los resultados, sin embargo, el núcleo del programa es capaz de manejar los problemas en 3D.
+
+\end{enumerate}
+
+\section*{Temas}
+
+\subsection*{Teoria de FEM no local}
+
+Las bases de la teoría no local las sentó \textcite{Kroner1967} en su artículo \textit{\citetitle*{Kroner1967}}. En este, Kröner expone que la energía sobre un cristal cúbico primitivo se debe en parte a las fuerzas de corto alcance y en parte a las fuerzas de largo alcance, de tal manera, Kröner llega a la siguiente ecuación:
+\begin{equation}
+	E=\frac{1}{2}\left[\int_{V}C_{ijkl}\varepsilon_{ij}(\boldsymbol{x})\varepsilon_{kl}(\boldsymbol{x})dv\right]+\frac{1}{2}\left[\int_{V}\int_{V'}C_{ijkl}(\boldsymbol{x})\varepsilon_{ij}(\boldsymbol{x})\varepsilon_{kl}(\boldsymbol{x'})dv'dv\right]
+\end{equation}
+Por ello, Kröner adopta el término No local para referirse a la interacción de fuerzas de largo alcance que se representan en el segundo término de la parte derecha de la ecuación.
+
+Con ello, Kröner llegó a la siguiente ecuación constitutiva:
+\begin{equation}
+	\sigma_{ij}(\boldsymbol{x})=C_{ijkl}\varepsilon_{kl}(\boldsymbol{x})+\int_{v'}C_{ijkl}(|\boldsymbol{x}-\boldsymbol{x'}|)\varepsilon_{kl}(\boldsymbol{x})dv'
+\end{equation}
+En esta ecuación, el segundo término representa el aporte no local mientras que el primer término representa el aporte local clásico. Además, se introduce el tensor $C_{ijkl}(|\boldsymbol{x}-\boldsymbol{x'}|)$ llamado el tensor elástico material. Este tensor depende de la distancia entre el punto de interés y los puntos del dominio. En este punto, no existía una manera sencilla de calcular $C_{ijkl}(|\boldsymbol{x}-\boldsymbol{x'}|)$.
+
+No fue hasta 5 años después que \textcite{Eringen1972} desarrollaron un modelo matemático donde se formula de manera completa la elasticidad no local. De este trabajo nace la teoría lineal en la que \textcite{Eringen1987} describe los dos modelos de elasticidad no local y sus aplicaciones. Los dos modelos son el modelo integral, el cual describe la interacción de fuerzas a larga distancia, y el modelo diferencial que describe interacciones a corta distancia \parencite{Polizzotto2001}. Eringen muestra una gran variedad de problemas que se pueden solucionar con la teoría no local, entre los que destacan la propagación de ondas y el uso de esta teoría en el estudio de fractura y grietas. Esto se debe a que en las puntas de las grietas, la elasticidad local presenta singularidades, obteniendo así un esfuerzo infinito, mientras que en la teoría no local hay un aporte del volumen adyacente, lo cual evita tener esfuerzos infinitos \parencite{Eringen1987}.
+
+En el trabajo \citetitle*{Eringen1987}, Eringen expone una manera de calcular el tensor elástico material.
+\begin{equation}
+	C_{ijkl}(|\boldsymbol{x}-\boldsymbol{x'}|)=\alpha(|\boldsymbol{x}-\boldsymbol{x'}|)C_{ijkl}
+\end{equation}
+Donde se introduce $\alpha$ como la \textit{función de atenuación}, por lo que Eringen llega a la siguiente ecuación constitutiva:
+\begin{equation}
+	\sigma_{ij}(\boldsymbol{x})=\int_{v'}\alpha(|\boldsymbol{x}-\boldsymbol{x'}|)C_{ijkl}\varepsilon_{kl}(\boldsymbol{x'})dv'
+	\label{eq:eringen}
+\end{equation}
+A partir de aquí, se resaltan los trabajos de \textcite{Polizzotto2001} donde reporta que la ecuación constitutiva se escribe con un factor $\zeta_1$ y $\zeta_2$, donde $\zeta_1+\zeta_2=1$ con el objetivo de representar el proceso de deformación de un sólido con dos fases. Una fase local ($\zeta_1$) y una fase no local ($\zeta_2$). 
+\begin{equation}
+	\sigma_{ij}(\boldsymbol{x})=\zeta_1C_{ijkl}\varepsilon_{kl}(\boldsymbol{x})+\zeta_2\int_{v'}A(|\boldsymbol{x}-\boldsymbol{x'}|)C_{ijkl}\varepsilon_{kl}(\boldsymbol{x'})dv'
+	\label{eq:polizzotto}
+\end{equation}
+
+Es claro que los dos modelos constitutivos mostrados anteriormente muestran diferencias en la manera de expresar el cálculo del tensor no local. El primer modelo comúnmente se llama modelo no local puro \parencite{Eringen1983} mientras que al segundo modelo se le llama modelo de dos fases \parencite{Eringen1987}.
+
+Ambos modelos se muestran en su forma integral, de ahora en adelante, cuando nos referimos al modelo de elasticidad estaremos hablando del modelo integral a menos de que se exponga explícitamente el modelo diferencial. La razón por la cual el modelo diferencial no toma tanta importancia es porque no presenta un aporte relevante de efectos no locales \parencite{Wang2016}. No fue hasta que \textcite{Khodabakhshi2015} presentaron un modelo integro diferencial que combina las dos perspectivas de la teoría, sin embargo, \textcite{Fernandez-Saez2016} mostraron que el modelo diferencial no era equivalente al modelo integral original (propuesto por \textcite{Eringen1983}, modelo no local puro).
+
+Recientes publicaciones como las de \textcite{Tuna2016} aseguran haber obtenido soluciones exactas para vigas Timoshenko (TBT) y Euler Bernoulli (EBBT), sin embargo, \textcite{Romano2016} comprobó que la solución propuesta por \textcite{Tuna2016} no satisface de manera precisa las condiciones de borde. Además, \textcite{Wang2016} comprobó que la solución presentada por \textcite{Tuna2016} corresponde a un estado límite del modelo de dos fases donde $\lim_{\zeta_{1} \to 0}$. En cuanto a otras soluciones analíicas, se pueden resaltar el trabajo de \textcite{ANGELAPISANO200313} en donde se presenta la solución analítica para una barra en tensión, sin embargo \textcite{Benvenuti2013} y \textcite{Zhu2012} comprobaron que la solución presentada por \textcite{ANGELAPISANO200313} presentaba un error considerable, por lo que dichos autores encontraron soluciones con mayor precisión para dicho problema. Las soluciones analíticas más prometedoras fueron propuestas por \textcite{Wang2016} donde se encontraron soluciones para EBBT para diferentes condiciones de borde.
+
+Dichas soluciones analíticas son de gran relevancia para el desarrollo numérico de la teoría, ya que, permiten la validación de las soluciones numéricas. En cuanto a soluciones numéricas se puede resaltar los trabajos de \textcite{Khodabakhshi2015} y \textcite{Pisano2009} donde se presenta un enfoque de FEM para la solución del modelo integro-diferencial \parencite{Khodabakhshi2015} y el modelo de dos fases \parencite{Pisano2009}. Posteriormente, \textcite{Abdollahi2013} presentaron soluciones usando polinomios de Chebyshev y series de Fourier, encontrando los mismos resultados usando \textit{Exponential Bases Functions} un año despues \parencite{Abdollahi2014}.
 
 
+Recientemente se pueden resaltar los estudios de \textcite{Romano2021} donde se propone la solución de EBBT con un modelo no local de gradiente, el artículo de \textcite{Pisano2021a} donde se re visita la teoría integro-diferencial y el estudio de \textcite{Zhang2021} donde se usa una función de atenuación bi‐Helmholtz propuesta por \textcite{Lazar2006} para solucionar TBT.
 
-\newpage
+\subsection*{Enmallado de teoría FEM no local}
+
 \printbibliography[heading=bibintoc]
 \end{document}
